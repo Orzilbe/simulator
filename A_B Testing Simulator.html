@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A/B Testing Simulator — Casual Mobile Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* neutrals — cool, deep, low chroma */
+    --bg:        oklch(0.165 0.012 255);
+    --bg-2:      oklch(0.145 0.012 255);
+    --surface:   oklch(0.205 0.014 255);
+    --surface-2: oklch(0.235 0.016 255);
+    --line:      oklch(0.30 0.018 255);
+    --line-soft: oklch(0.26 0.016 255);
+    --text:      oklch(0.96 0.006 255);
+    --muted:     oklch(0.72 0.012 255);
+    --faint:     oklch(0.56 0.014 255);
+
+    /* accents — shared chroma/lightness, varied hue */
+    --green:     oklch(0.80 0.17 150);
+    --green-dim: oklch(0.80 0.17 150 / 0.14);
+    --red:       oklch(0.68 0.20 22);
+    --red-dim:   oklch(0.68 0.20 22 / 0.14);
+    --cyan:      oklch(0.80 0.13 215);
+    --amber:     oklch(0.82 0.14 80);
+    --violet:    oklch(0.74 0.15 290);
+
+    --radius: 14px;
+    --shadow: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 18px 40px -22px oklch(0 0 0 / 0.8);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Space Grotesk", system-ui, sans-serif;
+    background:
+      radial-gradient(900px 520px at 82% -8%, oklch(0.80 0.13 215 / 0.10), transparent 60%),
+      radial-gradient(820px 480px at 10% 108%, oklch(0.80 0.17 150 / 0.07), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:0.005em;
+  }
+  .mono{ font-family:"JetBrains Mono", ui-monospace, monospace; }
+  .eyebrow{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--faint);
+  }
+
+  .wrap{ max-width:1240px; margin:0 auto; padding:26px 28px 60px; }
+
+  /* ───────────── Header ───────────── */
+  header.topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:20px; flex-wrap:wrap; margin-bottom:22px;
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .logo{
+    width:42px; height:42px; border-radius:11px; flex:none;
+    background:linear-gradient(150deg, var(--surface-2), var(--surface));
+    border:1px solid var(--line);
+    display:grid; place-items:center; position:relative;
+    box-shadow: var(--shadow);
+  }
+  .logo::before,.logo::after{
+    content:""; position:absolute; border-radius:2px;
+  }
+  .logo::before{ width:8px; height:18px; background:var(--green); left:11px; box-shadow:0 0 14px var(--green); }
+  .logo::after{ width:8px; height:11px; background:var(--red); right:11px; bottom:11px; box-shadow:0 0 14px var(--red); }
+  .brand h1{ font-size:18px; font-weight:600; letter-spacing:-0.01em; line-height:1.1; }
+  .brand p{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+
+  .progress{
+    display:flex; align-items:center; gap:10px;
+  }
+  .pip{
+    display:flex; align-items:center; gap:9px;
+    padding:8px 13px; border-radius:10px;
+    border:1px solid var(--line-soft); background:var(--surface);
+    font-family:"JetBrains Mono", monospace; font-size:11px;
+    letter-spacing:0.12em; text-transform:uppercase; color:var(--faint);
+    transition:.4s ease;
+  }
+  .pip .dot{ width:8px; height:8px; border-radius:50%; background:var(--line); transition:.4s; }
+  .pip.active{ color:var(--text); border-color:var(--cyan); background:oklch(0.80 0.13 215 / 0.08); }
+  .pip.active .dot{ background:var(--cyan); box-shadow:0 0 12px var(--cyan); }
+  .pip.done{ color:var(--muted); }
+  .pip.done .dot{ background:var(--green); box-shadow:0 0 10px var(--green); }
+
+  /* ───────────── KPI bar ───────────── */
+  .kpis{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;
+  }
+  .kpi{
+    position:relative; overflow:hidden;
+    background:var(--surface); border:1px solid var(--line-soft);
+    border-radius:var(--radius); padding:16px 17px 15px;
+    box-shadow:var(--shadow);
+    transition:border-color .4s, box-shadow .4s, transform .4s;
+  }
+  .kpi .label{ display:flex; align-items:center; justify-content:space-between; }
+  .kpi .label .name{ font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--faint); }
+  .kpi .val{ font-family:"JetBrains Mono",monospace; font-weight:700; font-size:31px; letter-spacing:-0.02em; margin-top:12px; line-height:1; font-variant-numeric:tabular-nums; }
+  .kpi .sub{ font-size:11.5px; color:var(--muted); margin-top:9px; height:14px; }
+  .kpi .spark{ height:30px; margin-top:11px; }
+  .kpi .spark svg{ width:100%; height:100%; overflow:visible; display:block; }
+
+  .arrow{
+    font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px;
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:7px; opacity:0;
+    transform:translateY(3px); transition:opacity .3s, transform .3s;
+  }
+  .arrow.show{ opacity:1; transform:translateY(0); }
+  .arrow.up{ color:var(--green); background:var(--green-dim); }
+  .arrow.down{ color:var(--red); background:var(--red-dim); }
+  .kpi.flash-up{ border-color:var(--green); box-shadow:0 0 0 1px var(--green), 0 0 34px -6px var(--green); }
+  .kpi.flash-down{ border-color:var(--red); box-shadow:0 0 0 1px var(--red), 0 0 34px -6px var(--red); }
+
+  /* ───────────── Main grid ───────────── */
+  .grid{
+    display:grid; grid-template-columns:1.05fr 0.95fr; gap:18px; align-items:start;
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--line-soft);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+  }
+  .card-h{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:15px 18px; border-bottom:1px solid var(--line-soft);
+  }
+  .card-h .t{ font-size:13.5px; font-weight:600; letter-spacing:0.01em; }
+  .badge{
+    font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--cyan);
+    border:1px solid oklch(0.80 0.13 215 / 0.35); background:oklch(0.80 0.13 215 / 0.08);
+    padding:4px 9px; border-radius:999px;
+  }
+
+  /* Control panel */
+  .panel-body{ padding:18px; }
+  .scenario-tag{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .scenario-tag .num{
+    font-family:"JetBrains Mono",monospace; font-weight:700; font-size:12px;
+    color:var(--amber); border:1px solid oklch(0.82 0.14 80 / 0.35);
+    background:oklch(0.82 0.14 80 / 0.08); padding:3px 9px; border-radius:7px; letter-spacing:0.05em;
+  }
+  .scenario-tag .ttl{ font-size:16px; font-weight:600; letter-spacing:-0.01em; }
+  .problem{
+    font-size:13.5px; line-height:1.55; color:var(--muted);
+    background:var(--bg-2); border:1px solid var(--line-soft);
+    border-left:3px solid var(--amber);
+    border-radius:10px; padding:13px 15px; margin-bottom:18px;
+  }
+  .problem b{ color:var(--text); font-weight:600; }
+  /* Hebrew (RTL) explanation blocks */
+  .he{ direction:rtl; text-align:right; font-family:"Space Grotesk", "Segoe UI", system-ui, sans-serif; }
+  .problem .he{ margin-top:11px; padding-top:11px; border-top:1px dashed var(--line-soft); color:var(--faint); font-size:12.5px; line-height:1.65; }
+  .problem .he b{ color:var(--muted); }
+  .opt .odesc-he{ direction:rtl; text-align:right; color:var(--faint); font-size:11.6px; line-height:1.5; padding-top:8px; margin-top:-2px; border-top:1px dashed var(--line-soft); }
+  .rtext-he{ direction:rtl; text-align:right; display:block; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line-soft); color:var(--muted); }
+  .blurb.he{ color:var(--faint); margin-top:-14px; }
+  .verdict-he{ direction:rtl; font-size:15px; font-weight:500; color:var(--muted); margin-bottom:14px; }
+
+  .options{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+  .opt{
+    text-align:left; cursor:pointer; color:inherit; font-family:inherit;
+    background:var(--surface-2); border:1px solid var(--line);
+    border-radius:12px; padding:15px 15px 14px;
+    display:flex; flex-direction:column; gap:9px; min-height:200px;
+    transition:transform .18s ease, border-color .2s, box-shadow .25s, background .2s;
+  }
+  .opt:hover{ transform:translateY(-3px); border-color:var(--line); box-shadow:0 16px 30px -20px oklch(0 0 0 / 0.9); }
+  .opt:disabled{ cursor:default; }
+  .opt .otop{ display:flex; align-items:center; justify-content:space-between; }
+  .opt .ver{ font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; letter-spacing:0.08em; }
+  .opt .kind{ font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--faint); }
+  .opt .odesc{ font-size:12.8px; line-height:1.5; color:var(--muted); flex:1; }
+  .opt .tags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tag{ font-family:"JetBrains Mono",monospace; font-size:10.5px; padding:3px 8px; border-radius:6px; letter-spacing:0.02em; }
+  .tag.up{ color:var(--green); background:var(--green-dim); }
+  .tag.down{ color:var(--red); background:var(--red-dim); }
+  .opt .deploy{
+    margin-top:2px; text-align:center; font-family:"JetBrains Mono",monospace;
+    font-size:12px; font-weight:700; letter-spacing:0.06em; padding:9px;
+    border-radius:8px; border:1px solid var(--line);
+    background:var(--bg-2); color:var(--text); transition:.2s;
+  }
+  /* version A vibe = green, version B vibe = violet/red */
+  .opt.A:hover{ border-color:var(--green); box-shadow:0 0 0 1px oklch(0.80 0.17 150 / 0.4), 0 16px 32px -20px var(--green); }
+  .opt.A:hover .deploy{ background:var(--green); color:oklch(0.18 0.03 150); border-color:var(--green); }
+  .opt.B:hover{ border-color:var(--violet); box-shadow:0 0 0 1px oklch(0.74 0.15 290 / 0.4), 0 16px 32px -20px var(--violet); }
+  .opt.B:hover .deploy{ background:var(--violet); color:oklch(0.18 0.03 290); border-color:var(--violet); }
+  .opt.chosen{ border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan); }
+  .opt.faded{ opacity:0.32; filter:saturate(0.6); }
+
+  .result{ margin-top:16px; }
+  .result.hidden{ display:none; }
+  .result .rline{
+    display:flex; align-items:flex-start; gap:11px;
+    background:var(--bg-2); border:1px solid var(--line-soft); border-radius:11px;
+    padding:13px 15px;
+  }
+  .result .ricon{
+    width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center;
+    font-family:"JetBrains Mono",monospace; font-weight:700; font-size:14px;
+  }
+  .result .rtext{ font-size:13px; line-height:1.55; color:var(--text); }
+  .result .rtext span{ color:var(--muted); }
+  .next-btn{
+    margin-top:14px; width:100%; cursor:pointer; font-family:"JetBrains Mono",monospace;
+    font-size:13px; font-weight:700; letter-spacing:0.06em;
+    padding:13px; border-radius:10px; border:1px solid var(--cyan);
+    background:oklch(0.80 0.13 215 / 0.12); color:var(--cyan);
+    transition:.2s;
+  }
+  .next-btn:hover{ background:var(--cyan); color:oklch(0.16 0.03 215); }
+
+  /* Visuals card */
+  .viz-body{ padding:18px; }
+  .chart-wrap{ position:relative; }
+  .chart-meta{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; }
+  .chart-meta .big{ font-family:"JetBrains Mono",monospace; font-weight:700; font-size:24px; letter-spacing:-0.02em; }
+  .chart-meta .cap{ font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--faint); }
+  #chart{ width:100%; height:172px; display:block; }
+
+  .bars{ margin-top:18px; display:flex; flex-direction:column; gap:14px; }
+  .bar-row .bl{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:7px; }
+  .bar-row .bl .bn{ font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .bar-row .bl .bv{ font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; font-variant-numeric:tabular-nums; }
+  .track{ height:9px; border-radius:99px; background:var(--bg-2); border:1px solid var(--line-soft); overflow:hidden; }
+  .fill{ height:100%; border-radius:99px; width:0%; transition:width .9s cubic-bezier(.22,.61,.36,1); }
+  .fill.d1{ background:linear-gradient(90deg, var(--cyan), oklch(0.80 0.13 195)); }
+  .fill.d7{ background:linear-gradient(90deg, var(--green), oklch(0.80 0.15 175)); }
+
+  .empty-feedback{ font-size:12.5px; color:var(--faint); line-height:1.5; margin-top:16px;
+    border-top:1px dashed var(--line-soft); padding-top:14px; }
+
+  /* ───────────── Summary ───────────── */
+  #summary{ display:none; }
+  #summary.show{ display:block; animation:rise .5s ease both; }
+  @keyframes rise{ from{ opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;} }
+  .summary-card{ padding:30px; text-align:center; }
+  .grade{
+    font-family:"JetBrains Mono",monospace; font-weight:700; font-size:64px; line-height:1;
+    letter-spacing:-0.02em; margin:6px 0 4px;
+  }
+  .verdict{ font-size:24px; font-weight:600; letter-spacing:-0.01em; margin-bottom:10px; }
+  .summary-card .blurb{ font-size:14px; line-height:1.6; color:var(--muted); max-width:560px; margin:0 auto 26px; }
+  .final-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; max-width:680px; margin:0 auto 26px; }
+  .fcell{ background:var(--bg-2); border:1px solid var(--line-soft); border-radius:11px; padding:14px 10px; }
+  .fcell .fn{ font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--faint); }
+  .fcell .fvr{ font-family:"JetBrains Mono",monospace; font-weight:700; font-size:22px; margin-top:8px; font-variant-numeric:tabular-nums; }
+  .fcell .fd{ font-family:"JetBrains Mono",monospace; font-size:11px; margin-top:5px; }
+  .replay{
+    cursor:pointer; font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:700; letter-spacing:0.06em;
+    padding:13px 26px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--text); transition:.2s;
+  }
+  .replay:hover{ border-color:var(--cyan); color:var(--cyan); }
+
+  .up-c{ color:var(--green); } .down-c{ color:var(--red); } .flat-c{ color:var(--faint); }
+
+  @media (max-width:920px){
+    .kpis{ grid-template-columns:repeat(2,1fr); }
+    .grid{ grid-template-columns:1fr; }
+    .final-grid{ grid-template-columns:repeat(2,1fr); }
+    .progress{ width:100%; }
+  }
+  @media (max-width:560px){
+    .options{ grid-template-columns:1fr; }
+    .opt{ min-height:auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="topbar" data-screen-label="Header">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>A/B Testing Simulator</h1>
+        <p>Live-ops decision lab · Casual Mobile Games</p>
+      </div>
+    </div>
+    <div class="progress" id="progress">
+      <div class="pip active" data-step="1"><span class="dot"></span>S1 · Onboarding</div>
+      <div class="pip" data-step="2"><span class="dot"></span>S2 · Ads</div>
+      <div class="pip" data-step="3"><span class="dot"></span>S3 · Whales</div>
+    </div>
+  </header>
+
+  <!-- KPI bar -->
+  <section class="kpis" id="kpis" data-screen-label="KPI Bar">
+    <div class="kpi" data-metric="d1">
+      <div class="label"><span class="name">D1 Retention</span><span class="arrow" data-arrow></span></div>
+      <div class="val" data-val>40%</div>
+      <div class="sub">Players returning day&nbsp;1</div>
+      <div class="spark" data-spark></div>
+    </div>
+    <div class="kpi" data-metric="d7">
+      <div class="label"><span class="name">D7 Retention</span><span class="arrow" data-arrow></span></div>
+      <div class="val" data-val>12%</div>
+      <div class="sub">Players returning day&nbsp;7</div>
+      <div class="spark" data-spark></div>
+    </div>
+    <div class="kpi" data-metric="arppu">
+      <div class="label"><span class="name">ARPPU</span><span class="arrow" data-arrow></span></div>
+      <div class="val" data-val>$15.00</div>
+      <div class="sub">Avg revenue / paying user</div>
+      <div class="spark" data-spark></div>
+    </div>
+    <div class="kpi" data-metric="revenue">
+      <div class="label"><span class="name">Daily Revenue</span><span class="arrow" data-arrow></span></div>
+      <div class="val" data-val>$5,000</div>
+      <div class="sub">Blended IAP&nbsp;+&nbsp;ads / day</div>
+      <div class="spark" data-spark></div>
+    </div>
+  </section>
+
+  <!-- Main grid -->
+  <div class="grid" id="game">
+    <!-- Control panel -->
+    <section class="card" data-screen-label="Control Panel">
+      <div class="card-h">
+        <span class="t">A/B Test Deployment</span>
+        <span class="badge" id="testCode">TEST 01 / 03</span>
+      </div>
+      <div class="panel-body">
+        <div class="scenario-tag">
+          <span class="num" id="sNum">01</span>
+          <span class="ttl" id="sTitle">Onboarding Leak</span>
+        </div>
+        <div class="problem" id="sProblem"></div>
+        <div class="options" id="options"></div>
+
+        <div class="result hidden" id="result">
+          <div class="rline">
+            <div class="ricon" id="rIcon"></div>
+            <div class="rtext" id="rText"></div>
+          </div>
+          <button class="next-btn" id="nextBtn">Next Scenario →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live visuals -->
+    <section class="card" data-screen-label="Live Performance">
+      <div class="card-h">
+        <span class="t">Live Performance</span>
+        <span class="badge" style="color:var(--green);border-color:oklch(0.80 0.17 150 / .35);background:oklch(0.80 0.17 150 / .08)">● STREAMING</span>
+      </div>
+      <div class="viz-body">
+        <div class="chart-wrap">
+          <div class="chart-meta">
+            <span class="big mono" id="chartBig">$5,000</span>
+            <span class="cap">Daily revenue · per deploy</span>
+          </div>
+          <canvas id="chart" width="600" height="172"></canvas>
+        </div>
+        <div class="bars">
+          <div class="bar-row">
+            <div class="bl"><span class="bn">D1 Retention</span><span class="bv" data-barv="d1">40%</span></div>
+            <div class="track"><div class="fill d1" data-bar="d1"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bl"><span class="bn">D7 Retention</span><span class="bv" data-barv="d7">12%</span></div>
+            <div class="track"><div class="fill d7" data-bar="d7"></div></div>
+          </div>
+        </div>
+        <div class="empty-feedback" id="emptyFb">Awaiting your first deployment. Pick Version A or B to push it live to a player cohort and watch the funnel respond in real time.<span class="he" style="display:block;margin-top:8px;color:var(--faint)">ממתין לפריסה הראשונה שלך. בחר גרסה A או B כדי להעלות אותה לאוויר לקוהורט שחקנים ולצפות במשפך מגיב בזמן אמת.</span></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Summary -->
+  <section class="card" id="summary" data-screen-label="End Summary">
+    <div class="summary-card">
+      <div class="eyebrow">Quarterly Review · Product Management Score</div>
+      <div class="grade" id="grade">A</div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-he he" id="verdictHe"></div>
+      <p class="blurb" id="blurb"></p>
+      <p class="blurb he" id="blurbHe"></p>
+      <div class="final-grid" id="finalGrid"></div>
+      <button class="replay" id="replay">↻ Run a new test cycle</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ───────── State ─────────
+  const START = { d1:40, d7:12, arppu:15, revenue:5000 };
+  let state, history, revHistory, step, pendingCollapse, choices;
+
+  // metric meta for formatting
+  const fmt = {
+    d1:     v => Math.round(v) + "%",
+    d7:     v => Math.round(v) + "%",
+    arppu:  v => "$" + v.toFixed(2),
+    revenue:v => "$" + Math.round(v).toLocaleString("en-US")
+  };
+
+  // ───────── Scenarios ─────────
+  const SCENARIOS = [
+    {
+      title:"Onboarding Leak",
+      problem:"Funnel analytics show <b>61% of new installs quit within the first 5 minutes</b> — before they ever reach the core loop. Day-1 retention is bleeding out at the front door.",
+      problemHe:"ניתוח המשפך מראה ש‑<b>61% מההתקנות החדשות נוטשות תוך 5 הדקות הראשונות</b> — עוד לפני שהגיעו ללולאת הליבה. שימור יום‑1 דולף כבר בכניסה.",
+      A:{ kind:"UX Focus", name:"Version A", desc:"Simplify the tutorial, cut the early pop-up barrage, and gift free starter coins so first session feels rewarding.",
+          descHe:"לפשט את ההדרכה, להפחית את חלונות הקופצים בתחילת המשחק, ולהעניק מטבעות פתיחה חינם כדי שהסשן הראשון יתגמל.",
+          tags:[["D1 +15pts","up"],["Revenue −5%","down"]],
+          apply:s=>{ s.d1+=15; s.revenue*=0.95; },
+          good:"Clean onboarding lifted Day-1 retention sharply. A wider top-of-funnel means every downstream cohort is bigger — a slow-burn revenue compounder.",
+          goodHe:"הדרכה נקייה העלתה משמעותית את שימור יום‑1. משפך רחב יותר אומר שכל קוהורט עתידי גדול יותר — מנוע צמיחה איטי אך מצטבר של הכנסות.",
+          tone:"up" },
+      B:{ kind:"Aggressive Monetization", name:"Version B", desc:"Hit new players with an early $0.99 Starter Pack paywall to convert intent at peak excitement.",
+          descHe:"להציב בפני שחקנים חדשים חבילת פתיחה ב‑0.99$ כדי להמיר כוונת קנייה ברגע ההתלהבות.",
+          tags:[["ARPPU +20%","up"],["Revenue +20%","up"],["D1 −10pts","down"]],
+          apply:s=>{ s.d1-=10; s.arppu*=1.20; s.revenue*=1.20; },
+          good:"Revenue jumped today and payer value rose — but you taxed the funnel. Fewer players reach Day-1, shrinking every future cohort.",
+          goodHe:"ההכנסות קפצו היום וערך המשלם עלה — אך הטלת מס על המשפך. פחות שחקנים מגיעים ליום‑1, מה שמכווץ כל קוהורט עתידי.",
+          tone:"mixed" }
+    },
+    {
+      title:"Ad Strategy Optimization",
+      problem:"Ad ARPDAU is decaying and review sentiment has soured — players are <b>churning over intrusive forced interstitials</b>. Long-term engagement is at risk.",
+      problemHe:"ה‑ARPDAU מהפרסומות נשחק וסנטימנט הביקורות הידרדר — שחקנים <b>נוטשים בגלל אינטרסטישל כפויים וחודרניים</b>. המעורבות לטווח הארוך בסכנה.",
+      A:{ kind:"Rewarded Focus", name:"Version A", desc:"Remove forced interstitials entirely and move to voluntary Rewarded Videos for extra lives and energy.",
+          descHe:"להסיר לחלוטין אינטרסטישל כפויים ולעבור לסרטוני וידאו מתוגמלים בהתנדבות עבור חיים ואנרגיה נוספים.",
+          tags:[["D7 +8pts","up"],["Revenue +10%","up"]],
+          apply:s=>{ s.d7+=8; s.revenue*=1.10; },
+          good:"Player-friendly ads rebuilt trust. Day-7 retention climbed and, counter-intuitively, revenue rose — engaged players watch more rewarded ads by choice.",
+          goodHe:"פרסום ידידותי לשחקן שיקם אמון. שימור יום‑7 עלה, ובאופן מנוגד לאינטואיציה גם ההכנסות עלו — שחקנים מעורבים צופים ביותר פרסומות מתוגמלות מבחירה.",
+          tone:"up" },
+      B:{ kind:"Max Exposure", name:"Version B", desc:"Increase forced interstitial frequency after every level failure to maximize short-term impressions.",
+          descHe:"להגדיל את תדירות האינטרסטישל הכפויים אחרי כל כישלון שלב כדי למקסם חשיפות לטווח קצר.",
+          tags:[["Revenue +30% now","up"],["Collapses next turn","down"],["D7 −20pts","down"]],
+          apply:s=>{ s.d7-=20; s.revenue*=1.30; },
+          collapse:0.62,
+          good:"Impressions spiked revenue today — but you torched Day-7 retention. The audience is walking, and that revenue spike will collapse next turn as the cohort empties.",
+          goodHe:"החשיפות הקפיצו את ההכנסות היום — אך שרפת את שימור יום‑7. הקהל עוזב, וקפיצת ההכנסות הזו תתמוטט בתור הבא כשהקוהורט יתרוקן.",
+          tone:"mixed" }
+    },
+    {
+      title:"Whale Retention & Monetization",
+      problem:"Your top 1% of spenders — the <b>whales</b> — have bought every piece of content and have nothing left to chase. Their spend is flattening and they're getting bored.",
+      problemHe:"אחוז אחד מובילי ההוצאה שלך — ה<b>לווייתנים</b> — קנו כל פריט תוכן ואין להם עוד מה לרדוף אחריו. ההוצאה שלהם מתמתנת והם משתעממים.",
+      A:{ kind:"Competitive Live Ops", name:"Version A", desc:"Launch a competitive Leaderboard with expensive, limited-edition cosmetic rewards built for status-seekers.",
+          descHe:"להשיק לוח מובילים תחרותי עם פרסי קוסמטיקה יקרים ומהדורה מוגבלת המיועדים למחפשי סטטוס.",
+          tags:[["ARPPU +35%","up"],["Revenue +15%","up"],["Retention stable","flat"]],
+          apply:s=>{ s.arppu*=1.35; s.revenue*=1.15; },
+          good:"Status-driven competition reignited whale spend — ARPPU surged and revenue followed, while retention held steady. A durable high-end economy.",
+          goodHe:"תחרות מבוססת‑סטטוס הציתה מחדש את הוצאת הלווייתנים — ה‑ARPPU זינק וההכנסות בעקבותיו, בעוד השימור נשמר יציב. כלכלה יוקרתית בת‑קיימא.",
+          tone:"up" },
+      B:{ kind:"Mass Appeal Event", name:"Version B", desc:"Run a highly accessible, free community live event that every player tier can enjoy together.",
+          descHe:"להריץ אירוע קהילתי חינמי ונגיש שכל דרגות השחקנים יכולות ליהנות ממנו יחד.",
+          tags:[["D7 +5pts","up"],["ARPPU stable","flat"]],
+          apply:s=>{ s.d7+=5; },
+          good:"A beloved community moment nudged Day-7 retention and broadened goodwill — but it left whale monetization on the table. Loved, not monetized.",
+          goodHe:"רגע קהילתי אהוב העלה מעט את שימור יום‑7 והרחיב את הרצון הטוב — אך השאיר את מונטיזציית הלווייתנים על השולחן. אהוב, אך לא ממומש.",
+          tone:"up" }
+    }
+  ];
+
+  // ───────── DOM ─────────
+  const $ = s => document.querySelector(s);
+  const kpiEls = {};
+  document.querySelectorAll(".kpi").forEach(el=>{ kpiEls[el.dataset.metric] = el; });
+  const chart = $("#chart"), ctx = chart.getContext("2d");
+
+  // ───────── Init ─────────
+  function reset(){
+    state = Object.assign({}, START);
+    history = { d1:[40], d7:[12], arppu:[15], revenue:[5000] };
+    revHistory = [5000];
+    step = 0; pendingCollapse = 0; choices = [];
+    $("#summary").classList.remove("show");
+    $("#game").style.display = "";
+    document.querySelectorAll(".kpi .arrow").forEach(a=>a.className="arrow");
+    renderKPIs(true);
+    renderBars();
+    drawChart();
+    loadScenario();
+  }
+
+  function loadScenario(){
+    const sc = SCENARIOS[step];
+    $("#sNum").textContent = String(step+1).padStart(2,"0");
+    $("#sTitle").textContent = sc.title;
+    $("#sProblem").innerHTML = sc.problem + '<div class="he">' + sc.problemHe + '</div>';
+    $("#testCode").textContent = "TEST 0"+(step+1)+" / 03";
+    // progress pips
+    document.querySelectorAll(".pip").forEach(p=>{
+      const n = +p.dataset.step;
+      p.classList.toggle("active", n===step+1);
+      p.classList.toggle("done", n<step+1);
+    });
+    // options
+    const opts = $("#options"); opts.innerHTML = "";
+    ["A","B"].forEach(key=>{
+      const o = sc[key];
+      const btn = document.createElement("button");
+      btn.className = "opt "+key;
+      btn.innerHTML =
+        '<div class="otop"><span class="ver">[ '+o.name+' ]</span><span class="kind">'+o.kind+'</span></div>'+
+        '<div class="odesc">'+o.desc+'</div>'+
+        '<div class="odesc-he">'+o.descHe+'</div>'+
+        '<div class="tags">'+o.tags.map(t=>'<span class="tag '+(t[1]==="flat"?"":t[1])+'" style="'+(t[1]==="flat"?"color:var(--faint);background:var(--bg-2)":"")+'">'+t[0]+'</span>').join("")+'</div>'+
+        '<div class="deploy">DEPLOY '+key+' ▸</div>';
+      btn.onclick = ()=>deploy(key);
+      opts.appendChild(btn);
+    });
+    // reset result
+    $("#result").classList.add("hidden");
+    $("#emptyFb").style.display = step===0 && choices.length===0 ? "" : "none";
+  }
+
+  // ───────── Deploy ─────────
+  function deploy(key){
+    const sc = SCENARIOS[step];
+    const o = sc[key];
+    const before = Object.assign({}, state);
+
+    // apply any pending collapse from last turn FIRST
+    let collapseNote = "", collapseNoteHe = "";
+    if(pendingCollapse){
+      state.revenue *= pendingCollapse;
+      collapseNote = " The interstitial cohort from last turn collapsed, dragging revenue down before this change even landed.";
+      collapseNoteHe = " \u05d4\u05e7\u05d5\u05d4\u05d5\u05e8\u05d8 \u05de\u05d4\u05d0\u05d9\u05e0\u05d8\u05e8\u05e1\u05d8\u05d9\u05e9\u05dc \u05de\u05d4\u05ea\u05d5\u05e8 \u05d4\u05e7\u05d5\u05d3\u05dd \u05d4\u05ea\u05de\u05d5\u05d8\u05d8 \u05d5\u05d2\u05e8\u05e8 \u05d0\u05ea \u05d4\u05d4\u05db\u05e0\u05e1\u05d5\u05ea \u05de\u05d8\u05d4 \u05e2\u05d5\u05d3 \u05dc\u05e4\u05e0\u05d9 \u05e9\u05d4\u05e9\u05d9\u05e0\u05d5\u05d9 \u05d4\u05d6\u05d4 \u05e0\u05db\u05e0\u05e1 \u05dc\u05ea\u05d5\u05e7\u05e3.";
+      pendingCollapse = 0;
+    }
+
+    o.apply(state);
+    if(o.collapse) pendingCollapse = o.collapse;
+
+    // clamp
+    state.d1 = clamp(state.d1, 0, 100);
+    state.d7 = clamp(state.d7, 0, 100);
+    state.arppu = Math.max(0, state.arppu);
+    state.revenue = Math.max(0, state.revenue);
+
+    choices.push({ scenario:step, key, kind:o.kind });
+
+    // push history
+    for(const k of ["d1","d7","arppu","revenue"]) history[k].push(state[k]);
+    revHistory.push(state.revenue);
+
+    // lock buttons
+    document.querySelectorAll("#options .opt").forEach(b=>{
+      b.disabled = true;
+      b.classList.toggle("chosen", b.classList.contains(key));
+      b.classList.toggle("faded", !b.classList.contains(key));
+    });
+
+    // animate
+    animateKPIs(before, state);
+    renderBars();
+    drawChart(true);
+
+    // feedback
+    $("#emptyFb").style.display="none";
+    const res = $("#result"); res.classList.remove("hidden");
+    const icon = $("#rIcon");
+    if(o.tone==="up"){ icon.textContent="▲"; icon.style.cssText="color:var(--green);background:var(--green-dim)"; }
+    else { icon.textContent="≈"; icon.style.cssText="color:var(--amber);background:oklch(0.82 0.14 80 /.14)"; }
+    $("#rText").innerHTML = '<b style="font-weight:600">'+o.name+' · '+o.kind+'.</b> <span>'+o.good+collapseNote+'</span>'+
+      '<span class="rtext-he">'+o.goodHe+collapseNoteHe+'</span>';
+    $("#nextBtn").textContent = step<2 ? "Next Scenario →" : "View Product Review →";
+  }
+
+  $("#nextBtn").onclick = ()=>{
+    if(step<2){ step++; loadScenario(); }
+    else showSummary();
+  };
+  $("#replay").onclick = reset;
+
+  // ───────── KPI render + animate ─────────
+  function renderKPIs(){
+    for(const k in fmt){ kpiEls[k].querySelector("[data-val]").textContent = fmt[k](state[k]); drawSpark(k); }
+    $("#chartBig").textContent = fmt.revenue(state.revenue);
+  }
+  function animateKPIs(before, after){
+    for(const k in fmt){
+      const el = kpiEls[k];
+      const arrow = el.querySelector("[data-arrow]");
+      const diff = after[k]-before[k];
+      const up = diff>0.001, down = diff<-0.001;
+      // flash
+      el.classList.remove("flash-up","flash-down");
+      void el.offsetWidth;
+      if(up) el.classList.add("flash-up");
+      if(down) el.classList.add("flash-down");
+      setTimeout(()=>el.classList.remove("flash-up","flash-down"), 1400);
+      // arrow
+      arrow.className = "arrow " + (up?"up show":down?"down show":"");
+      if(up||down){
+        const pct = before[k]!==0 ? Math.abs(diff/before[k]*100) : 0;
+        arrow.textContent = (up?"▲ ":"▼ ") + (k==="d1"||k==="d7" ? ("+"+Math.abs(Math.round(diff))+"pt").replace("+-","-") : pct.toFixed(0)+"%");
+        if(down) arrow.textContent = (k==="d1"||k==="d7") ? "▼ "+Math.round(diff)+"pt" : "▼ "+pct.toFixed(0)+"%";
+        setTimeout(()=>arrow.classList.remove("show"), 2600);
+      }
+      // count up
+      countTo(el.querySelector("[data-val]"), before[k], after[k], fmt[k]);
+    }
+    countTo($("#chartBig"), before.revenue, after.revenue, fmt.revenue);
+    setTimeout(()=>{ for(const k in fmt) drawSpark(k); }, 700);
+  }
+  function countTo(node, from, to, f){
+    const dur=750, t0=performance.now();
+    function frame(t){
+      const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+      node.textContent = f(from+(to-from)*e);
+      if(p<1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ───────── Sparklines ─────────
+  function drawSpark(k){
+    const host = kpiEls[k].querySelector("[data-spark]");
+    const data = history[k];
+    const w=200,h=30,pad=2;
+    const min=Math.min(...data), max=Math.max(...data), rng=(max-min)||1;
+    const col = (k==="revenue"||k==="arppu") ? "var(--amber)" : k==="d1" ? "var(--cyan)" : "var(--green)";
+    let pts = data.map((v,i)=>{
+      const x = data.length===1 ? w : pad + i*(w-2*pad)/(data.length-1);
+      const y = h-pad - (v-min)/rng*(h-2*pad);
+      return [x,y];
+    });
+    if(data.length===1) pts = [[pad, h/2],[w-pad,h/2]];
+    const line = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+    const area = line+" L"+pts[pts.length-1][0].toFixed(1)+" "+h+" L"+pts[0][0].toFixed(1)+" "+h+" Z";
+    const id = "g_"+k;
+    host.innerHTML =
+      '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
+        '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'+
+          '<stop offset="0" stop-color="'+col+'" stop-opacity="0.28"/>'+
+          '<stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'+
+        '<path d="'+area+'" fill="url(#'+id+')"/>'+
+        '<path d="'+line+'" fill="none" stroke="'+col+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'+
+        '<circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="2.4" fill="'+col+'"/>'+
+      '</svg>';
+  }
+
+  // ───────── Retention bars ─────────
+  function renderBars(){
+    ["d1","d7"].forEach(k=>{
+      $('[data-bar="'+k+'"]').style.width = clamp(state[k],0,100)+"%";
+      $('[data-barv="'+k+'"]').textContent = Math.round(state[k])+"%";
+    });
+  }
+
+  // ───────── Revenue trendline (canvas) ─────────
+  let chartAnim = 0;
+  function drawChart(animate){
+    const dpr = window.devicePixelRatio||1;
+    const cw = chart.clientWidth||600, ch = 172;
+    if(chart.width!==cw*dpr){ chart.width=cw*dpr; chart.height=ch*dpr; }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,cw,ch);
+
+    const data = revHistory;
+    const padL=8, padR=14, padT=14, padB=22;
+    const max=Math.max(...data)*1.12, min=Math.min(...data)*0.86, rng=(max-min)||1;
+    const X = i => padL + i*(cw-padL-padR)/Math.max(1,data.length-1);
+    const Y = v => ch-padB - (v-min)/rng*(ch-padT-padB);
+
+    // grid
+    ctx.strokeStyle="oklch(0.30 0.018 255 / 0.6)"; ctx.lineWidth=1;
+    ctx.font="9px 'JetBrains Mono', monospace"; ctx.fillStyle="oklch(0.56 0.014 255)";
+    for(let g=0;g<=3;g++){
+      const y=padT+g*(ch-padT-padB)/3;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(cw-padR,y); ctx.stroke();
+    }
+    // x labels
+    ctx.textAlign="center";
+    const labels=["Start","S1","S2","S3"];
+    for(let i=0;i<data.length;i++){
+      ctx.fillText(labels[i]||("T"+i), X(i), ch-7);
+    }
+
+    cancelAnimationFrame(chartAnim);
+    const t0=performance.now(), dur=animate?700:1;
+    function frame(t){
+      const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.clearRect(0,0,cw,ch);
+      // redraw grid + labels
+      ctx.strokeStyle="oklch(0.30 0.018 255 / 0.6)"; ctx.lineWidth=1;
+      for(let g=0;g<=3;g++){ const y=padT+g*(ch-padT-padB)/3; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(cw-padR,y); ctx.stroke(); }
+      ctx.fillStyle="oklch(0.56 0.014 255)"; ctx.font="9px 'JetBrains Mono', monospace"; ctx.textAlign="center";
+      for(let i=0;i<data.length;i++) ctx.fillText(labels[i]||("T"+i), X(i), ch-7);
+
+      // how many full segments + partial
+      const totalSeg = data.length-1;
+      const drawn = totalSeg*e;
+      // build visible path
+      const path=[]; 
+      for(let i=0;i<data.length;i++){
+        if(i<=Math.floor(drawn)+0 ){
+          path.push([X(i),Y(data[i])]);
+        }
+      }
+      // partial segment
+      const fi=Math.floor(drawn);
+      if(fi<totalSeg){
+        const frac=drawn-fi;
+        const x = X(fi)+(X(fi+1)-X(fi))*frac;
+        const y = Y(data[fi])+(Y(data[fi+1])-Y(data[fi]))*frac;
+        path.push([x,y]);
+      }
+
+      if(path.length>=2){
+        // area
+        const grad=ctx.createLinearGradient(0,padT,0,ch-padB);
+        grad.addColorStop(0,"oklch(0.80 0.13 215 / 0.30)");
+        grad.addColorStop(1,"oklch(0.80 0.13 215 / 0)");
+        ctx.beginPath(); ctx.moveTo(path[0][0],ch-padB);
+        path.forEach(pt=>ctx.lineTo(pt[0],pt[1]));
+        ctx.lineTo(path[path.length-1][0],ch-padB); ctx.closePath();
+        ctx.fillStyle=grad; ctx.fill();
+        // line
+        ctx.beginPath(); ctx.moveTo(path[0][0],path[0][1]);
+        for(let i=1;i<path.length;i++) ctx.lineTo(path[i][0],path[i][1]);
+        ctx.strokeStyle="oklch(0.80 0.13 215)"; ctx.lineWidth=2.4; ctx.lineJoin="round"; ctx.lineCap="round";
+        ctx.shadowColor="oklch(0.80 0.13 215 / 0.6)"; ctx.shadowBlur=10;
+        ctx.stroke(); ctx.shadowBlur=0;
+      }
+      // points
+      for(let i=0;i<data.length;i++){
+        if(i>drawn+0.001) continue;
+        const x=X(i),y=Y(data[i]);
+        const rising = i>0 && data[i]>=data[i-1];
+        ctx.beginPath(); ctx.arc(x,y,3.1,0,7); 
+        ctx.fillStyle = i===0 ? "oklch(0.72 0.012 255)" : rising ? "oklch(0.80 0.17 150)" : "oklch(0.68 0.20 22)";
+        ctx.fill();
+        ctx.lineWidth=2; ctx.strokeStyle="oklch(0.205 0.014 255)"; ctx.stroke();
+      }
+      if(p<1) chartAnim=requestAnimationFrame(frame);
+    }
+    chartAnim=requestAnimationFrame(frame);
+  }
+
+  // ───────── Summary ─────────
+  function showSummary(){
+    $("#game").style.display="none";
+    const s = state;
+    const retScore = (s.d1/100)*0.5 + (s.d7/100)*0.5;            // 0..1 retention health
+    const monScore = Math.min(1, (s.revenue/9000)*0.6 + (s.arppu/30)*0.4); // 0..1 monetization
+    const balance = 1 - Math.abs(retScore - monScore);          // how balanced
+
+    // count aggressive (B in s1, B in s2) vs sustainable choices
+    const aggressive = choices.filter((c,i)=> (i===0&&c.key==="B")||(i===1&&c.key==="B")).length;
+    const playerFirst = choices.filter((c,i)=> (i===0&&c.key==="A")||(i===1&&c.key==="A")||(i===2&&c.key==="B")).length;
+
+    let grade, verdict, blurb, gColor, verdictHe, blurbHe;
+    const composite = retScore*0.5 + monScore*0.35 + balance*0.15;
+
+    if(s.d7 < 8 || s.d1 < 32){
+      grade="C−"; gColor="var(--red)";
+      verdict="The Burnout Operator";
+      verdictHe="מפעיל השחיקה";
+      blurb="You chased short-term numbers and the audience walked. Revenue may have spiked on the way down, but with retention this thin the player base is collapsing — there's no cohort left to monetize next quarter. A classic growth-at-all-costs flameout.";
+      blurbHe="רדפת אחרי מספרים לטווח קצר והקהל עזב. יתכן שההכנסות זינקו בדרך למטה, אך עם שימור דק כל כך בסיס השחקנים קורס — לא נשאר קוהורט למונטיזציה ברבעון הבא. שריפת צמיחה‑בכל‑מחיר קלאסית.";
+    } else if(retScore>=0.42 && monScore>=0.62 && balance>=0.6){
+      grade="A+"; gColor="var(--green)";
+      verdict="The Sustainable Economist";
+      verdictHe="הכלכלן בר‑הקיימא";
+      blurb="A masterclass in live-ops. You kept the funnel healthy AND grew payer value — retention and monetization rose together instead of fighting each other. This is a compounding economy that will still be printing revenue a year from now.";
+      blurbHe="שיעור מופת בלייב‑אופס. שמרת על משפך בריא וגם הגדלת את ערך המשלם — שימור ומונטיזציה עלו יחד במקום להילחם זה בזה. זו כלכלה מצטברת שתמשיך להניב הכנסות גם בעוד שנה.";
+    } else if(retScore>=0.45 && monScore<0.55){
+      grade="B+"; gColor="var(--cyan)";
+      verdict="The Community Champion";
+      verdictHe="אלוף הקהילה";
+      blurb="Players love your game and it shows in retention — you built something people want to come back to. You left real money on the table by under-monetizing your whales, but you've earned a loyal base that's primed for a stronger monetization quarter.";
+      blurbHe="השחקנים אוהבים את המשחק וזה ניכר בשימור — בנית משהו שאנשים רוצים לחזור אליו. השארת כסף אמיתי על השולחן בכך שלא מינפת את הלווייתנים, אך זכית בבסיס נאמן שמוכן לרבעון מונטיזציה חזק יותר.";
+    } else if(monScore>=0.6 && retScore<0.42){
+      grade="B−"; gColor="var(--amber)";
+      verdict="The Revenue Maximizer";
+      verdictHe="ממקסם ההכנסות";
+      blurb="You squeezed impressive revenue and ARPPU out of the game, but retention is soft. The economy works today; the open question is how long the audience tolerates the pressure. Watch your Day-7 curve closely before pushing harder.";
+      blurbHe="סחטת הכנסות ו‑ARPPU מרשימים מהמשחק, אך השימור רך. הכלכלה עובדת היום; השאלה הפתוחה היא כמה זמן הקהל יסבול את הלחץ. עקוב מקרוב אחר עקומת יום‑7 לפני שתלחץ חזק יותר.";
+    } else {
+      grade="A−"; gColor="var(--green)";
+      verdict="The Balanced Operator";
+      verdictHe="מפעיל מאוזן";
+      blurb="A well-rounded quarter. You traded sensibly between keeping players happy and growing revenue, avoiding the obvious traps. There's headroom to specialize — but this is a healthy, defensible position to build from.";
+      blurbHe="רבעון מעוגל היטב. סחרת בתבונה בין שמירה על שחקנים מרוצים לבין הגדלת הכנסות, ונמנעת מהמלכודות הברורות. יש מרחב להתמחות — אך זו עמדה בריאה וברת‑הגנה לבנות ממנה.";
+    }
+
+    $("#grade").textContent=grade; $("#grade").style.color=gColor;
+    $("#verdict").textContent=verdict;
+    $("#verdictHe").textContent=verdictHe;
+    $("#blurb").textContent=blurb;
+    $("#blurbHe").textContent=blurbHe;
+
+    const cells=[
+      ["D1 Ret", fmt.d1(s.d1), s.d1, START.d1],
+      ["D7 Ret", fmt.d7(s.d7), s.d7, START.d7],
+      ["ARPPU", fmt.arppu(s.arppu), s.arppu, START.arppu],
+      ["Daily Rev", fmt.revenue(s.revenue), s.revenue, START.revenue]
+    ];
+    $("#finalGrid").innerHTML = cells.map(c=>{
+      const d=c[2]-c[3], up=d>0.001, dn=d<-0.001;
+      const cls=up?"up-c":dn?"down-c":"flat-c";
+      const pct = c[3]? Math.round((c[2]-c[3])/c[3]*100):0;
+      const arr=up?"▲":dn?"▼":"■";
+      return '<div class="fcell"><div class="fn">'+c[0]+'</div><div class="fvr">'+c[1]+
+             '</div><div class="fd '+cls+'">'+arr+' '+(pct>0?"+":"")+pct+'% vs start</div></div>';
+    }).join("");
+
+    $("#summary").classList.add("show");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  // ───────── utils ─────────
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  window.addEventListener("resize", ()=>{ drawChart(false); });
+
+  // go
+  reset();
+})();
+</script>
+</body>
+</html>
