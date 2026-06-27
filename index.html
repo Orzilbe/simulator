@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>A/B Testing Simulator — Casual Mobile Games</title>
+<title>Monetization Simulator - Casual Mobile Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
   :root{
-    /* neutrals — cool, deep, low chroma */
+    /* neutrals - cool, deep, low chroma */
     --bg:        oklch(0.165 0.012 255);
     --bg-2:      oklch(0.145 0.012 255);
     --surface:   oklch(0.205 0.014 255);
@@ -20,7 +20,7 @@
     --muted:     oklch(0.72 0.012 255);
     --faint:     oklch(0.56 0.014 255);
 
-    /* accents — shared chroma/lightness, varied hue */
+    /* accents - shared chroma/lightness, varied hue */
     --green:     oklch(0.80 0.17 150);
     --green-dim: oklch(0.80 0.17 150 / 0.14);
     --red:       oklch(0.68 0.20 22);
@@ -287,7 +287,7 @@
     <div class="brand">
       <div class="logo"></div>
       <div>
-        <h1>A/B Testing Simulator</h1>
+        <h1>Monetization Simulator</h1>
         <p>Live-ops decision lab · Casual Mobile Games</p>
       </div>
     </div>
@@ -417,60 +417,60 @@
   const SCENARIOS = [
     {
       title:"Onboarding Leak",
-      problem:"Funnel analytics show <b>61% of new installs quit within the first 5 minutes</b> — before they ever reach the core loop. Day-1 retention is bleeding out at the front door.",
-      problemHe:"ניתוח המשפך מראה ש‑<b>61% מההתקנות החדשות נוטשות תוך 5 הדקות הראשונות</b> — עוד לפני שהגיעו ללולאת הליבה. שימור יום‑1 דולף כבר בכניסה.",
+      problem:"Funnel analytics show <b>61% of new installs quit within the first 5 minutes</b> - before they ever reach the core loop. Day-1 retention is bleeding out at the front door.",
+      problemHe:"ניתוח המשפך מראה ש‑<b>61% מההתקנות החדשות נוטשות תוך 5 הדקות הראשונות</b> - עוד לפני שהגיעו ללולאת הליבה. שימור יום‑1 דולף כבר בכניסה.",
       A:{ kind:"UX Focus", name:"Version A", desc:"Simplify the tutorial, cut the early pop-up barrage, and gift free starter coins so first session feels rewarding.",
           descHe:"לפשט את ההדרכה, להפחית את חלונות הקופצים בתחילת המשחק, ולהעניק מטבעות פתיחה חינם כדי שהסשן הראשון יתגמל.",
           tags:[["D1 +15pts","up"],["Revenue −5%","down"]],
           apply:s=>{ s.d1+=15; s.revenue*=0.95; },
-          good:"Clean onboarding lifted Day-1 retention sharply. A wider top-of-funnel means every downstream cohort is bigger — a slow-burn revenue compounder.",
-          goodHe:"הדרכה נקייה העלתה משמעותית את שימור יום‑1. משפך רחב יותר אומר שכל קוהורט עתידי גדול יותר — מנוע צמיחה איטי אך מצטבר של הכנסות.",
+          good:"Clean onboarding lifted Day-1 retention sharply. A wider top-of-funnel means every downstream cohort is bigger - a slow-burn revenue compounder.",
+          goodHe:"הדרכה נקייה העלתה משמעותית את שימור יום‑1. משפך רחב יותר אומר שכל קוהורט עתידי גדול יותר - מנוע צמיחה איטי אך מצטבר של הכנסות.",
           tone:"up" },
       B:{ kind:"Aggressive Monetization", name:"Version B", desc:"Hit new players with an early $0.99 Starter Pack paywall to convert intent at peak excitement.",
           descHe:"להציב בפני שחקנים חדשים חבילת פתיחה ב‑0.99$ כדי להמיר כוונת קנייה ברגע ההתלהבות.",
           tags:[["ARPPU +20%","up"],["Revenue +20%","up"],["D1 −10pts","down"]],
           apply:s=>{ s.d1-=10; s.arppu*=1.20; s.revenue*=1.20; },
-          good:"Revenue jumped today and payer value rose — but you taxed the funnel. Fewer players reach Day-1, shrinking every future cohort.",
-          goodHe:"ההכנסות קפצו היום וערך המשלם עלה — אך הטלת מס על המשפך. פחות שחקנים מגיעים ליום‑1, מה שמכווץ כל קוהורט עתידי.",
+          good:"Revenue jumped today and payer value rose - but you taxed the funnel. Fewer players reach Day-1, shrinking every future cohort.",
+          goodHe:"ההכנסות קפצו היום וערך המשלם עלה - אך הטלת מס על המשפך. פחות שחקנים מגיעים ליום‑1, מה שמכווץ כל קוהורט עתידי.",
           tone:"mixed" }
     },
     {
       title:"Ad Strategy Optimization",
-      problem:"Ad ARPDAU is decaying and review sentiment has soured — players are <b>churning over intrusive forced interstitials</b>. Long-term engagement is at risk.",
-      problemHe:"ה‑ARPDAU מהפרסומות נשחק וסנטימנט הביקורות הידרדר — שחקנים <b>נוטשים בגלל אינטרסטישל כפויים וחודרניים</b>. המעורבות לטווח הארוך בסכנה.",
+      problem:"Ad ARPDAU is decaying and review sentiment has soured - players are <b>churning over intrusive forced interstitials</b>. Long-term engagement is at risk.",
+      problemHe:"ה‑ARPDAU מהפרסומות נשחק וסנטימנט הביקורות הידרדר - שחקנים <b>נוטשים בגלל אינטרסטישל כפויים וחודרניים</b>. המעורבות לטווח הארוך בסכנה.",
       A:{ kind:"Rewarded Focus", name:"Version A", desc:"Remove forced interstitials entirely and move to voluntary Rewarded Videos for extra lives and energy.",
           descHe:"להסיר לחלוטין אינטרסטישל כפויים ולעבור לסרטוני וידאו מתוגמלים בהתנדבות עבור חיים ואנרגיה נוספים.",
           tags:[["D7 +8pts","up"],["Revenue +10%","up"]],
           apply:s=>{ s.d7+=8; s.revenue*=1.10; },
-          good:"Player-friendly ads rebuilt trust. Day-7 retention climbed and, counter-intuitively, revenue rose — engaged players watch more rewarded ads by choice.",
-          goodHe:"פרסום ידידותי לשחקן שיקם אמון. שימור יום‑7 עלה, ובאופן מנוגד לאינטואיציה גם ההכנסות עלו — שחקנים מעורבים צופים ביותר פרסומות מתוגמלות מבחירה.",
+          good:"Player-friendly ads rebuilt trust. Day-7 retention climbed and, counter-intuitively, revenue rose - engaged players watch more rewarded ads by choice.",
+          goodHe:"פרסום ידידותי לשחקן שיקם אמון. שימור יום‑7 עלה, ובאופן מנוגד לאינטואיציה גם ההכנסות עלו - שחקנים מעורבים צופים ביותר פרסומות מתוגמלות מבחירה.",
           tone:"up" },
       B:{ kind:"Max Exposure", name:"Version B", desc:"Increase forced interstitial frequency after every level failure to maximize short-term impressions.",
           descHe:"להגדיל את תדירות האינטרסטישל הכפויים אחרי כל כישלון שלב כדי למקסם חשיפות לטווח קצר.",
           tags:[["Revenue +30% now","up"],["Collapses next turn","down"],["D7 −20pts","down"]],
           apply:s=>{ s.d7-=20; s.revenue*=1.30; },
           collapse:0.62,
-          good:"Impressions spiked revenue today — but you torched Day-7 retention. The audience is walking, and that revenue spike will collapse next turn as the cohort empties.",
-          goodHe:"החשיפות הקפיצו את ההכנסות היום — אך שרפת את שימור יום‑7. הקהל עוזב, וקפיצת ההכנסות הזו תתמוטט בתור הבא כשהקוהורט יתרוקן.",
+          good:"Impressions spiked revenue today - but you torched Day-7 retention. The audience is walking, and that revenue spike will collapse next turn as the cohort empties.",
+          goodHe:"החשיפות הקפיצו את ההכנסות היום - אך שרפת את שימור יום‑7. הקהל עוזב, וקפיצת ההכנסות הזו תתמוטט בתור הבא כשהקוהורט יתרוקן.",
           tone:"mixed" }
     },
     {
       title:"Whale Retention & Monetization",
-      problem:"Your top 1% of spenders — the <b>whales</b> — have bought every piece of content and have nothing left to chase. Their spend is flattening and they're getting bored.",
-      problemHe:"אחוז אחד מובילי ההוצאה שלך — ה<b>לווייתנים</b> — קנו כל פריט תוכן ואין להם עוד מה לרדוף אחריו. ההוצאה שלהם מתמתנת והם משתעממים.",
+      problem:"Your top 1% of spenders - the <b>whales</b> - have bought every piece of content and have nothing left to chase. Their spend is flattening and they're getting bored.",
+      problemHe:"אחוז אחד מובילי ההוצאה שלך - ה<b>לווייתנים</b> - קנו כל פריט תוכן ואין להם עוד מה לרדוף אחריו. ההוצאה שלהם מתמתנת והם משתעממים.",
       A:{ kind:"Competitive Live Ops", name:"Version A", desc:"Launch a competitive Leaderboard with expensive, limited-edition cosmetic rewards built for status-seekers.",
           descHe:"להשיק לוח מובילים תחרותי עם פרסי קוסמטיקה יקרים ומהדורה מוגבלת המיועדים למחפשי סטטוס.",
           tags:[["ARPPU +35%","up"],["Revenue +15%","up"],["Retention stable","flat"]],
           apply:s=>{ s.arppu*=1.35; s.revenue*=1.15; },
-          good:"Status-driven competition reignited whale spend — ARPPU surged and revenue followed, while retention held steady. A durable high-end economy.",
-          goodHe:"תחרות מבוססת‑סטטוס הציתה מחדש את הוצאת הלווייתנים — ה‑ARPPU זינק וההכנסות בעקבותיו, בעוד השימור נשמר יציב. כלכלה יוקרתית בת‑קיימא.",
+          good:"Status-driven competition reignited whale spend - ARPPU surged and revenue followed, while retention held steady. A durable high-end economy.",
+          goodHe:"תחרות מבוססת‑סטטוס הציתה מחדש את הוצאת הלווייתנים - ה‑ARPPU זינק וההכנסות בעקבותיו, בעוד השימור נשמר יציב. כלכלה יוקרתית בת‑קיימא.",
           tone:"up" },
       B:{ kind:"Mass Appeal Event", name:"Version B", desc:"Run a highly accessible, free community live event that every player tier can enjoy together.",
           descHe:"להריץ אירוע קהילתי חינמי ונגיש שכל דרגות השחקנים יכולות ליהנות ממנו יחד.",
           tags:[["D7 +5pts","up"],["ARPPU stable","flat"]],
           apply:s=>{ s.d7+=5; },
-          good:"A beloved community moment nudged Day-7 retention and broadened goodwill — but it left whale monetization on the table. Loved, not monetized.",
-          goodHe:"רגע קהילתי אהוב העלה מעט את שימור יום‑7 והרחיב את הרצון הטוב — אך השאיר את מונטיזציית הלווייתנים על השולחן. אהוב, אך לא ממומש.",
+          good:"A beloved community moment nudged Day-7 retention and broadened goodwill - but it left whale monetization on the table. Loved, not monetized.",
+          goodHe:"רגע קהילתי אהוב העלה מעט את שימור יום‑7 והרחיב את הרצון הטוב - אך השאיר את מונטיזציית הלווייתנים על השולחן. אהוב, אך לא ממומש.",
           tone:"up" }
     }
   ];
@@ -773,20 +773,20 @@
       grade="C−"; gColor="var(--red)";
       verdict="The Burnout Operator";
       verdictHe="מפעיל השחיקה";
-      blurb="You chased short-term numbers and the audience walked. Revenue may have spiked on the way down, but with retention this thin the player base is collapsing — there's no cohort left to monetize next quarter. A classic growth-at-all-costs flameout.";
-      blurbHe="רדפת אחרי מספרים לטווח קצר והקהל עזב. יתכן שההכנסות זינקו בדרך למטה, אך עם שימור דק כל כך בסיס השחקנים קורס — לא נשאר קוהורט למונטיזציה ברבעון הבא. שריפת צמיחה‑בכל‑מחיר קלאסית.";
+      blurb="You chased short-term numbers and the audience walked. Revenue may have spiked on the way down, but with retention this thin the player base is collapsing - there's no cohort left to monetize next quarter. A classic growth-at-all-costs flameout.";
+      blurbHe="רדפת אחרי מספרים לטווח קצר והקהל עזב. יתכן שההכנסות זינקו בדרך למטה, אך עם שימור דק כל כך בסיס השחקנים קורס - לא נשאר קוהורט למונטיזציה ברבעון הבא. שריפת צמיחה‑בכל‑מחיר קלאסית.";
     } else if(retScore>=0.42 && monScore>=0.62 && balance>=0.6){
       grade="A+"; gColor="var(--green)";
       verdict="The Sustainable Economist";
       verdictHe="הכלכלן בר‑הקיימא";
-      blurb="A masterclass in live-ops. You kept the funnel healthy AND grew payer value — retention and monetization rose together instead of fighting each other. This is a compounding economy that will still be printing revenue a year from now.";
-      blurbHe="שיעור מופת בלייב‑אופס. שמרת על משפך בריא וגם הגדלת את ערך המשלם — שימור ומונטיזציה עלו יחד במקום להילחם זה בזה. זו כלכלה מצטברת שתמשיך להניב הכנסות גם בעוד שנה.";
+      blurb="A masterclass in live-ops. You kept the funnel healthy AND grew payer value - retention and monetization rose together instead of fighting each other. This is a compounding economy that will still be printing revenue a year from now.";
+      blurbHe="שיעור מופת בלייב‑אופס. שמרת על משפך בריא וגם הגדלת את ערך המשלם - שימור ומונטיזציה עלו יחד במקום להילחם זה בזה. זו כלכלה מצטברת שתמשיך להניב הכנסות גם בעוד שנה.";
     } else if(retScore>=0.45 && monScore<0.55){
       grade="B+"; gColor="var(--cyan)";
       verdict="The Community Champion";
       verdictHe="אלוף הקהילה";
-      blurb="Players love your game and it shows in retention — you built something people want to come back to. You left real money on the table by under-monetizing your whales, but you've earned a loyal base that's primed for a stronger monetization quarter.";
-      blurbHe="השחקנים אוהבים את המשחק וזה ניכר בשימור — בנית משהו שאנשים רוצים לחזור אליו. השארת כסף אמיתי על השולחן בכך שלא מינפת את הלווייתנים, אך זכית בבסיס נאמן שמוכן לרבעון מונטיזציה חזק יותר.";
+      blurb="Players love your game and it shows in retention - you built something people want to come back to. You left real money on the table by under-monetizing your whales, but you've earned a loyal base that's primed for a stronger monetization quarter.";
+      blurbHe="השחקנים אוהבים את המשחק וזה ניכר בשימור - בנית משהו שאנשים רוצים לחזור אליו. השארת כסף אמיתי על השולחן בכך שלא מינפת את הלווייתנים, אך זכית בבסיס נאמן שמוכן לרבעון מונטיזציה חזק יותר.";
     } else if(monScore>=0.6 && retScore<0.42){
       grade="B−"; gColor="var(--amber)";
       verdict="The Revenue Maximizer";
@@ -797,8 +797,8 @@
       grade="A−"; gColor="var(--green)";
       verdict="The Balanced Operator";
       verdictHe="מפעיל מאוזן";
-      blurb="A well-rounded quarter. You traded sensibly between keeping players happy and growing revenue, avoiding the obvious traps. There's headroom to specialize — but this is a healthy, defensible position to build from.";
-      blurbHe="רבעון מעוגל היטב. סחרת בתבונה בין שמירה על שחקנים מרוצים לבין הגדלת הכנסות, ונמנעת מהמלכודות הברורות. יש מרחב להתמחות — אך זו עמדה בריאה וברת‑הגנה לבנות ממנה.";
+      blurb="A well-rounded quarter. You traded sensibly between keeping players happy and growing revenue, avoiding the obvious traps. There's headroom to specialize - but this is a healthy, defensible position to build from.";
+      blurbHe="רבעון מעוגל היטב. סחרת בתבונה בין שמירה על שחקנים מרוצים לבין הגדלת הכנסות, ונמנעת מהמלכודות הברורות. יש מרחב להתמחות - אך זו עמדה בריאה וברת‑הגנה לבנות ממנה.";
     }
 
     $("#grade").textContent=grade; $("#grade").style.color=gColor;
