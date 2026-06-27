@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Monetization Simulator — Casual Mobile Games</title>
+<title>Monetization Simulator - Casual Mobile Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -110,7 +110,7 @@
   .kpi.flash-up{ border-color:var(--green); box-shadow:0 0 0 1px var(--green), 0 0 34px -6px var(--green); }
   .kpi.flash-down{ border-color:var(--red); box-shadow:0 0 0 1px var(--red), 0 0 34px -6px var(--red); }
 
-  /* Main grid — 3 columns: control | visuals | QR */
+  /* Main grid - 3 columns: control | visuals | QR */
   .grid{ display:grid; grid-template-columns:1.05fr 0.95fr 220px; gap:18px; align-items:start; }
 
   .card{
@@ -434,39 +434,39 @@ document.addEventListener('DOMContentLoaded', function(){ document.getElementByI
   const SCENARIOS = [
     {
       title:"Onboarding Leak",
-      problem:"Funnel analytics show <b>61% of new installs quit within the first 5 minutes</b> — before they ever reach the core loop. Day-1 retention is bleeding out at the front door.",
+      problem:"Funnel analytics show <b>61% of new installs quit within the first 5 minutes</b> - before they ever reach the core loop. Day-1 retention is bleeding out at the front door.",
       A:{ kind:"UX Focus", name:"Version A", desc:"Simplify the tutorial, cut the early pop-up barrage, and gift free starter coins so the first session feels rewarding rather than transactional.",
           apply:s=>{ s.d1+=15; s.revenue*=0.95; },
-          good:"Clean onboarding lifted Day-1 retention sharply. A wider top-of-funnel means every downstream cohort is bigger — a slow-burn revenue compounder that pays off over months.",
+          good:"Clean onboarding lifted Day-1 retention sharply. A wider top-of-funnel means every downstream cohort is bigger - a slow-burn revenue compounder that pays off over months.",
           tone:"up" },
-      B:{ kind:"Early Monetization", name:"Version B", desc:"Intercept new players at peak excitement with a $0.99 Starter Pack offer — a limited-time pop-up appearing 90 seconds into the first session.",
+      B:{ kind:"Early Monetization", name:"Version B", desc:"Intercept new players at peak excitement with a $0.99 Starter Pack offer - a limited-time pop-up appearing 90 seconds into the first session.",
           apply:s=>{ s.d1-=12; s.arppu*=1.20; s.revenue*=1.20; },
-          good:"Revenue jumped and payer conversion hit a new high — but you taxed the funnel at its most fragile moment. Fewer players survive to Day-1, compressing every future cohort.",
+          good:"Revenue jumped and payer conversion hit a new high - but you taxed the funnel at its most fragile moment. Fewer players survive to Day-1, compressing every future cohort.",
           tone:"mixed" }
     },
     {
       title:"Ad Strategy Optimization",
-      problem:"Review scores are sliding and support tickets are up — players are <b>vocal about feeling bombarded by forced ads</b>. But your ad network account manager is pushing back: the impression data looks strong.",
-      A:{ kind:"Rewarded Ads", name:"Version A", desc:"Kill all forced interstitials. Replace with opt-in Rewarded Videos — players choose to watch in exchange for extra lives, energy boosts, or bonus coins.",
+      problem:"Review scores are sliding and support tickets are up - players are <b>vocal about feeling bombarded by forced ads</b>. But your ad network account manager is pushing back: the impression data looks strong.",
+      A:{ kind:"Rewarded Ads", name:"Version A", desc:"Kill all forced interstitials. Replace with opt-in Rewarded Videos - players choose to watch in exchange for extra lives, energy boosts, or bonus coins.",
           apply:s=>{ s.d7+=8; s.revenue*=1.10; },
-          good:"Removing forced ads felt like a revenue cut — but the opposite happened. Trust rebuilt, session lengths grew, and engaged players voluntarily watched more ads than the forced format ever extracted.",
+          good:"Removing forced ads felt like a revenue cut - but the opposite happened. Trust rebuilt, session lengths grew, and engaged players voluntarily watched more ads than the forced format ever extracted.",
           tone:"up" },
-      B:{ kind:"Max Impressions", name:"Version B", desc:"Double down: add a forced interstitial after every failed level attempt. More touchpoints, more impressions. The account manager says CPMs are strong right now — capture it.",
+      B:{ kind:"Max Impressions", name:"Version B", desc:"Double down: add a forced interstitial after every failed level attempt. More touchpoints, more impressions. The account manager says CPMs are strong right now - capture it.",
           apply:s=>{ s.d7-=20; s.revenue*=1.30; },
           collapse:0.62,
-          good:"Impressions and revenue spiked — the dashboard looked great for exactly one reporting cycle. But players felt punished for failing, and the cohort quietly walked. That spike collapses as soon as the audience thins.",
+          good:"Impressions and revenue spiked - the dashboard looked great for exactly one reporting cycle. But players felt punished for failing, and the cohort quietly walked. That spike collapses as soon as the audience thins.",
           tone:"mixed" }
     },
     {
       title:"Whale Retention & Monetization",
-      problem:"Your top 1% of spenders — the <b>whales</b> — have cleared every content tier and have nothing left to chase. Spend per whale is flattening week-over-week.",
-      A:{ kind:"Competitive Live Ops", name:"Version A", desc:"Launch a ranked Leaderboard season with scarce, expensive cosmetic rewards — exclusive titles, animated effects, profile borders — visible to the whole server. Reset every 30 days.",
+      problem:"Your top 1% of spenders - the <b>whales</b> - have cleared every content tier and have nothing left to chase. Spend per whale is flattening week-over-week.",
+      A:{ kind:"Competitive Live Ops", name:"Version A", desc:"Launch a ranked Leaderboard season with scarce, expensive cosmetic rewards - exclusive titles, animated effects, profile borders - visible to the whole server. Reset every 30 days.",
           apply:s=>{ s.arppu*=1.35; s.revenue*=1.15; },
-          good:"Status is a renewable resource. The leaderboard reignited competitive spending without touching retention — whales now have a recurring reason to spend, not just a one-time unlock.",
+          good:"Status is a renewable resource. The leaderboard reignited competitive spending without touching retention - whales now have a recurring reason to spend, not just a one-time unlock.",
           tone:"up" },
-      B:{ kind:"Flash Sale", name:"Version B", desc:"Run a 48-hour 'appreciation sale' — 50% off the top premium bundles. High urgency, high visibility. It worked great in beta.",
+      B:{ kind:"Flash Sale", name:"Version B", desc:"Run a 48-hour 'appreciation sale' - 50% off the top premium bundles. High urgency, high visibility. It worked great in beta.",
           apply:s=>{ s.d7+=3; s.arppu*=0.78; s.revenue*=1.18; },
-          good:"The sale moved volume and players loved the goodwill gesture. But you've trained your whales to wait for discounts. Full-price conversion drops as they learn the pattern — ARPPU will keep sliding.",
+          good:"The sale moved volume and players loved the goodwill gesture. But you've trained your whales to wait for discounts. Full-price conversion drops as they learn the pattern - ARPPU will keep sliding.",
           tone:"mixed" }
     },
     {
@@ -474,11 +474,11 @@ document.addEventListener('DOMContentLoaded', function(){ document.getElementByI
       problem:"Core players are burning through content too fast and churning after week 2. <b>Progression pacing is broken</b>, and you need a long-term retention loop that also monetizes.",
       A:{ kind:"Seasonal Battle Pass", name:"Version A", desc:"Introduce a Battle Pass with 60 tiers of rewards spread across 8 weeks. Daily and weekly quests give players structured goals. A free track exists alongside the premium paid track.",
           apply:s=>{ s.d7+=5; s.revenue*=1.12; },
-          good:"The Battle Pass gave players a reason to open the game every day — not because they had to, but because the next quest was always within reach. Retention lifted and conversion grew organically through cosmetic value.",
+          good:"The Battle Pass gave players a reason to open the game every day - not because they had to, but because the next quest was always within reach. Retention lifted and conversion grew organically through cosmetic value.",
           tone:"up" },
-      B:{ kind:"Energy Gate", name:"Version B", desc:"Cap progression at Level 20 with a hard energy wall — players hit a 24-hour timer or pay to continue. Casual players can wait it out; engaged players will convert.",
+      B:{ kind:"Energy Gate", name:"Version B", desc:"Cap progression at Level 20 with a hard energy wall - players hit a 24-hour timer or pay to continue. Casual players can wait it out; engaged players will convert.",
           apply:s=>{ s.d7-=12; s.arppu*=1.25; },
-          good:"Frustrated players paid to push through — ARPPU surged immediately. But the energy wall felt punitive rather than optional, and casual players uninstalled rather than wait or pay. Long-term cohort scale took a permanent hit.",
+          good:"Frustrated players paid to push through - ARPPU surged immediately. But the energy wall felt punitive rather than optional, and casual players uninstalled rather than wait or pay. Long-term cohort scale took a permanent hit.",
           tone:"mixed" }
     }
   ];
@@ -732,15 +732,15 @@ document.addEventListener('DOMContentLoaded', function(){ document.getElementByI
     if(s.d7 < 8 || s.d1 < 32){
       grade="C−"; gColor="var(--red)";
       verdict="The Burnout Operator";
-      blurb="You chased short-term numbers and the audience walked. Revenue may have spiked on the way down, but with retention this thin the player base is collapsing — there's no cohort left to monetize next quarter. A classic growth-at-all-costs flameout.";
+      blurb="You chased short-term numbers and the audience walked. Revenue may have spiked on the way down, but with retention this thin the player base is collapsing - there's no cohort left to monetize next quarter. A classic growth-at-all-costs flameout.";
     } else if(retScore >= 0.40 && monScore >= 0.58){
       grade="A+"; gColor="var(--green)";
       verdict="The Sustainable Economist";
-      blurb="A masterclass in live-ops. You kept the funnel healthy AND grew payer value — retention and monetization rose together instead of fighting each other. This is a compounding economy that will still be printing revenue a year from now.";
+      blurb="A masterclass in live-ops. You kept the funnel healthy AND grew payer value - retention and monetization rose together instead of fighting each other. This is a compounding economy that will still be printing revenue a year from now.";
     } else if(retScore >= 0.43 && monScore < 0.52){
       grade="B+"; gColor="var(--cyan)";
       verdict="The Community Champion";
-      blurb="Players love your game and it shows in retention — you built something people want to come back to. You left real money on the table by under-monetizing your whales, but you've earned a loyal base that's primed for a stronger monetization quarter.";
+      blurb="Players love your game and it shows in retention - you built something people want to come back to. You left real money on the table by under-monetizing your whales, but you've earned a loyal base that's primed for a stronger monetization quarter.";
     } else if(monScore >= 0.55 && retScore < 0.40){
       grade="B−"; gColor="var(--amber)";
       verdict="The Revenue Maximizer";
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function(){ document.getElementByI
     } else {
       grade="A−"; gColor="var(--green)";
       verdict="The Balanced Operator";
-      blurb="A well-rounded quarter. You traded sensibly between keeping players happy and growing revenue, avoiding the obvious traps. There's headroom to specialize — but this is a healthy, defensible position to build from.";
+      blurb="A well-rounded quarter. You traded sensibly between keeping players happy and growing revenue, avoiding the obvious traps. There's headroom to specialize - but this is a healthy, defensible position to build from.";
     }
 
     $("#grade").textContent=grade; $("#grade").style.color=gColor;
